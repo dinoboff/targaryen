@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "groupRelations": {
+      "$uid0": {
+        "requests": {
+          "$uid1": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      }
+    }
+  }
+}
