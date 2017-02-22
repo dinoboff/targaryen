@@ -895,6 +895,47 @@ describe('database', function() {
       expect(db.write('/a', 2).allowed).to.be.false();
     });
 
+    it('should fix 121 1/1', function() {
+      const rules = {
+        rules: {
+          users: {},
+          groups: {
+            $groupId: {
+              '.write': 'newData.parent().parent().child("users").child(auth.uid).exists()'
+            }
+          }
+        }
+      };
+      const data = {users: {bob: true}};
+      const db = database.create(rules, data).as({uid: 'bob'}).with({debug: true});
+
+      expect(db.write('/groups/users', true).allowed).to.be.true();
+    });
+
+    it('should fix 121 2/2', function() {
+      const rules = {
+        rules: {
+          users: {
+            $uid: {
+              '.write': true
+            }
+          },
+          groups: {
+            $groupId: {
+              '.write': 'newData.parent().parent().child("users").child(auth.uid).exists()'
+            }
+          }
+        }
+      };
+      const data = {};
+      const db = database.create(rules, data).as({uid: 'bob'}).with({debug: true});
+
+      expect(db.update('/', {
+        'users/bob': true,
+        'groups/users': true
+      }).allowed).to.be.true();
+    });
+
   });
 
   describe('#update', function() {
