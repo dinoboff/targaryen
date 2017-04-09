@@ -895,6 +895,39 @@ describe('database', function() {
       expect(db.write('/a', 2).allowed).to.be.false();
     });
 
+    it('should fix issue 122', function() {
+      const rules = {
+        rules: {
+          '.write': true,
+          item: {
+            someAttrsCollection: {
+              $key1: {
+                '.validate': 'newData.hasChildren() && newData.hasChild("itemId")',
+                someAttrProp: {
+                  '.validate': 'newData.isString()'
+                }
+              }
+            }
+          }
+        }
+      };
+      const data = {
+        item: {
+          someAttrsCollection: [{
+            itemId: 'foo'
+          }]
+        }
+      };
+      const db = database.create(rules, data);
+
+      expect(db.write('/item/someAttrsCollection/0/someAttrProp', 'someValue').allowed).to.be.true();
+      expect(db.write('/item/someAttrsCollection/1/someAttrProp', 'someValue').allowed).to.be.false();
+      expect(db.update('/item/someAttrsCollection/1', {
+        itemId: 'bar',
+        someAttrProp: 'someValue'
+      }).allowed).to.be.true();
+    });
+
   });
 
   describe('#update', function() {
